@@ -81,6 +81,25 @@ html.dark .glass-panel {
   box-shadow: 0 16px 25px -4px rgba(16, 185, 129, 0.12);
 }
 
+/* Header Styling */
+header {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+html.dark header {
+  background-color: rgba(10, 25, 47, 0.95) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Brand Title */
+.brand-title {
+  color: #0f172a;
+}
+html.dark .brand-title {
+  color: #ffffff !important;
+}
+
 /* Dark Mode component overrides */
 html.dark .bg-white {
   background-color: #0a192f !important;
@@ -111,6 +130,19 @@ html.dark .text-slate-700 {
 html.dark .text-slate-600,
 html.dark .text-slate-500 {
   color: #94a3b8 !important;
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #060e1d !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark #mobile-menu > div {
+  background-color: #0a192f !important;
+  color: #f8fafc !important;
 }
 
 /* Gradient Text */

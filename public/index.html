@@ -14,6 +14,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           colors: {
@@ -52,27 +53,27 @@
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="bg-slate-50 text-slate-900 font-sans antialiased min-h-screen flex flex-col selection:bg-emerald-500 selection:text-white">
+<body class="bg-slate-50 text-slate-900 font-sans antialiased min-h-screen flex flex-col selection:bg-emerald-500 selection:text-white transition-colors duration-200">
 
-  <!-- Toast Notification Container -->
-  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-auto"></div>
+  <!-- Toast Notification Container (Positioned bottom right to never overlap header) -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-auto"></div>
 
   <!-- Global Header & Navigation -->
-  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/90 shadow-sm transition-colors">
+  <header class="sticky top-0 z-40 backdrop-blur-xl shadow-sm transition-colors duration-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
       
       <!-- Brand Logo -->
       <a href="javascript:void(0)" onclick="switchView('landing')" class="flex items-center gap-2.5 sm:gap-3 group cursor-pointer">
-        <div class="relative w-10 h-10 sm:w-11 sm:h-11 rounded-2xl overflow-hidden shadow-sm flex items-center justify-center transition-transform group-hover:scale-105 border border-slate-200/80 bg-white">
+        <div class="relative w-10 h-10 sm:w-11 sm:h-11 rounded-2xl overflow-hidden shadow-sm flex items-center justify-center transition-transform group-hover:scale-105 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
           <img src="icon-light.png" alt="SCRAPO" class="w-full h-full object-cover light-only" />
           <img src="icon-dark.png" alt="SCRAPO" class="w-full h-full object-cover dark-only" />
         </div>
         <div class="flex flex-col">
           <div class="flex items-center gap-1.5">
-            <span class="text-xl sm:text-2xl font-black tracking-tight text-slate-900 leading-none">SCRAPO</span>
+            <span class="text-xl sm:text-2xl font-black tracking-tight brand-title leading-none">SCRAPO</span>
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           </div>
-          <span class="text-[9px] sm:text-[10px] font-bold text-emerald-600 tracking-wider uppercase mt-0.5">The Smarter Way to Scrap</span>
+          <span class="text-[9px] sm:text-[10px] font-bold text-emerald-600 dark:text-emerald-400 tracking-wider uppercase mt-0.5">The Smarter Way to Scrap</span>
         </div>
       </a>
 
