@@ -295,55 +295,90 @@ function switchView(viewName) {
 }
 
 function updateNavbar() {
-  const authBtn = document.getElementById('nav-auth-btn');
   const userGreeting = document.getElementById('nav-user-greeting');
-  const portalLinks = document.getElementById('nav-portal-links');
-  if (!authBtn) return;
+  const drawerAuth = document.getElementById('drawer-auth-section');
 
   if (window.scrapo.currentUser) {
-    authBtn.innerHTML = `<i data-lucide="log-out" class="w-4 h-4"></i> Logout`;
-    authBtn.className = "px-3.5 py-2 rounded-xl text-xs font-semibold bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 flex items-center gap-1.5 transition-all";
-    authBtn.onclick = () => {
-      window.scrapo.logout();
-      showToast('Signed Out', 'You have been safely logged out.', 'info');
-      switchView('landing');
-    };
+    const user = window.scrapo.currentUser;
+    const role = user.role;
+    let roleBadgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+    let roleName = 'Household Resident';
+    let portalTarget = 'user-dashboard';
+    let portalIcon = 'home';
+
+    if (role === 'collector') {
+      roleBadgeClass = 'bg-amber-100 text-amber-800 border-amber-300';
+      roleName = 'Verified Collector Agent';
+      portalTarget = 'collector-dashboard';
+      portalIcon = 'truck';
+    } else if (role === 'admin') {
+      roleBadgeClass = 'bg-blue-100 text-blue-800 border-blue-300';
+      roleName = 'Fleet & Ops Admin';
+      portalTarget = 'admin-dashboard';
+      portalIcon = 'shield';
+    }
+
+    // Update Top Bar User Chip
     if (userGreeting) {
-      const role = window.scrapo.currentUser.role;
-      let badgeColor = 'bg-emerald-50 text-emerald-800 border-emerald-200';
-      if (role === 'collector') badgeColor = 'bg-amber-50 text-amber-800 border-amber-200';
-      if (role === 'admin') badgeColor = 'bg-blue-50 text-blue-800 border-blue-200';
       userGreeting.style.display = 'flex';
       userGreeting.innerHTML = `
-        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${badgeColor} border">
+        <div onclick="switchView('${portalTarget}')" class="cursor-pointer px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center gap-2 transition-all">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          ${window.scrapo.currentUser.name} (${role.toUpperCase()})
-        </span>
+          <span class="text-xs font-bold text-slate-800">${user.name}</span>
+          <span class="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md ${roleBadgeClass} border">${role}</span>
+        </div>
       `;
     }
-    if (portalLinks) {
-      portalLinks.style.display = 'flex';
-      const role = window.scrapo.currentUser.role;
-      let portalBtnText = '🏠 My Portal';
-      if (role === 'collector') portalBtnText = '🚚 Collector Portal';
-      if (role === 'admin') portalBtnText = '🛡️ Fleet Admin Ops';
-      portalLinks.innerHTML = `
-        <button onclick="switchView('${role}-dashboard')" class="text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 px-3.5 py-2 rounded-xl border border-emerald-200 transition-all flex items-center gap-1.5 shadow-sm">
-          ${portalBtnText}
-        </button>
+
+    // Update Hamburger Drawer Auth Section
+    if (drawerAuth) {
+      drawerAuth.innerHTML = `
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-emerald-600 text-white font-black text-lg flex items-center justify-center shadow-sm">
+              ${user.name.charAt(0)}
+            </div>
+            <div>
+              <h4 class="font-black text-sm text-slate-900">${user.name}</h4>
+              <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-md ${roleBadgeClass} border mt-0.5">${roleName}</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-[11px] text-slate-500 mb-3">${user.phone || user.email || 'Verified Account'}</p>
+
+        <div class="flex items-center gap-2 pt-2 border-t border-slate-200/80">
+          <button onclick="closeMobileMenu(); switchView('${portalTarget}');" class="flex-1 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center gap-1.5 transition-all shadow-sm">
+            <i data-lucide="${portalIcon}" class="w-3.5 h-3.5"></i> My Portal
+          </button>
+          <button onclick="closeMobileMenu(); window.scrapo.logout(); showToast('Signed Out', 'You have been safely logged out.', 'info'); switchView('landing');" class="py-2 px-3 rounded-xl text-xs font-bold bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 flex items-center justify-center gap-1 transition-all">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Logout
+          </button>
+        </div>
       `;
     }
   } else {
-    authBtn.innerHTML = `<i data-lucide="user-check" class="w-4 h-4"></i> Sign In / Portal`;
-    authBtn.className = "px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white border border-slate-900 flex items-center gap-1.5 transition-all shadow-sm";
-    authBtn.onclick = () => openModal('auth-modal');
+    // Guest / Logged Out State
     if (userGreeting) {
       userGreeting.innerHTML = '';
       userGreeting.style.display = 'none';
     }
-    if (portalLinks) {
-      portalLinks.innerHTML = '';
-      portalLinks.style.display = 'none';
+
+    if (drawerAuth) {
+      drawerAuth.innerHTML = `
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-2xl bg-slate-200 text-slate-600 flex items-center justify-center">
+            <i data-lucide="user" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-sm text-slate-900">Guest User</h4>
+            <p class="text-[11px] text-slate-500">Sign in to schedule scrap pickup & view payouts</p>
+          </div>
+        </div>
+        <button onclick="closeMobileMenu(); openModal('auth-modal');" class="w-full py-2.5 rounded-xl font-extrabold text-xs bg-slate-900 hover:bg-slate-800 text-white flex items-center justify-center gap-2 transition-all shadow-sm">
+          <i data-lucide="log-in" class="w-4 h-4"></i> Sign In / Access Portal
+        </button>
+      `;
     }
   }
   lucide.createIcons();
