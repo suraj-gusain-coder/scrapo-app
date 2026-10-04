@@ -194,6 +194,35 @@ function showToast(title, message, type = 'success') {
   }, 4500);
 }
 
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  const btn = document.getElementById('hamburger-icon');
+  if (menu) {
+    const isHidden = menu.classList.contains('hidden');
+    if (isHidden) {
+      menu.classList.remove('hidden');
+      if (btn) btn.setAttribute('data-lucide', 'x');
+      document.body.style.overflow = 'hidden';
+    } else {
+      menu.classList.add('hidden');
+      if (btn) btn.setAttribute('data-lucide', 'menu');
+      document.body.style.overflow = 'auto';
+    }
+    lucide.createIcons();
+  }
+}
+
+function closeMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  const btn = document.getElementById('hamburger-icon');
+  if (menu) {
+    menu.classList.add('hidden');
+    if (btn) btn.setAttribute('data-lucide', 'menu');
+    document.body.style.overflow = 'auto';
+    lucide.createIcons();
+  }
+}
+
 function openModal(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) {
