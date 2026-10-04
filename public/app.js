@@ -1,4 +1,4 @@
-// SCRAPO - Core Application Engine & Multi-Role State Manager (Light Mode Optimized)
+// SCRAPO - Core Application Engine with Light/Dark Mode & Auth-Gated Pickup Scheduling
 
 const DEFAULT_RATES = [
   { id: 'paper-news', category: 'Paper & Cardboard', name: 'Old Newspaper (Raddi)', rate: 14, unit: 'kg', icon: 'newspaper', desc: 'Clean daily print newspapers' },
@@ -86,6 +86,8 @@ class ScrapoStore {
     this.bookings = JSON.parse(localStorage.getItem('scrapo_bookings')) || INITIAL_BOOKINGS;
     this.currentUser = JSON.parse(localStorage.getItem('scrapo_user')) || null;
     this.currentRole = this.currentUser ? this.currentUser.role : 'guest';
+    this.theme = localStorage.getItem('scrapo_theme') || 'light';
+    this.pendingBooking = false;
     this.collectorOnline = true;
     this.selectedCalculatorItems = {};
   }
@@ -93,6 +95,7 @@ class ScrapoStore {
     localStorage.setItem('scrapo_rates', JSON.stringify(this.rates));
     localStorage.setItem('scrapo_bookings', JSON.stringify(this.bookings));
     localStorage.setItem('scrapo_user', JSON.stringify(this.currentUser));
+    localStorage.setItem('scrapo_theme', this.theme);
   }
   login(userObj) {
     this.currentUser = userObj;
@@ -118,9 +121,9 @@ class ScrapoStore {
     const newId = 'SCR-' + Math.floor(1000 + Math.random() * 9000);
     const newBooking = {
       id: newId,
-      customerName: bookingData.customerName || 'Resident Customer',
-      phone: bookingData.phone || '+91 98765 00000',
-      address: bookingData.address || 'Doorstep Address',
+      customerName: bookingData.customerName || (this.currentUser?.name || 'Resident Customer'),
+      phone: bookingData.phone || (this.currentUser?.phone || '+91 98765 00000'),
+      address: bookingData.address || (this.currentUser?.address || 'Doorstep Address'),
       city: bookingData.city || 'Gurugram',
       pincode: bookingData.pincode || '122001',
       date: bookingData.date || 'Today',
@@ -164,13 +167,50 @@ class ScrapoStore {
 
 window.scrapo = new ScrapoStore();
 
+// Theme Management (Light / Dark Mode Switch)
+function initTheme() {
+  const html = document.documentElement;
+  const currentTheme = window.scrapo.theme;
+  if (currentTheme === 'dark') {
+    html.classList.add('dark');
+  } else {
+    html.classList.remove('dark');
+  }
+  updateThemeIcons();
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  if (html.classList.contains('dark')) {
+    html.classList.remove('dark');
+    window.scrapo.theme = 'light';
+    showToast('Theme Changed', 'Switched to Light Mode', 'info');
+  } else {
+    html.classList.add('dark');
+    window.scrapo.theme = 'dark';
+    showToast('Theme Changed', 'Switched to Dark Mode', 'info');
+  }
+  window.scrapo.save();
+  updateThemeIcons();
+}
+
+function updateThemeIcons() {
+  const isDark = document.documentElement.classList.contains('dark');
+  document.querySelectorAll('.theme-toggle-icon').forEach(icon => {
+    icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+  });
+  lucide.createIcons();
+}
+
+// Notifications
 function showToast(title, message, type = 'success') {
   const container = document.getElementById('toast-container');
   if (!container) return;
   const toast = document.createElement('div');
-  const bgClass = type === 'success' 
-    ? 'bg-white border-emerald-500 text-slate-800 shadow-xl shadow-emerald-500/10' 
-    : 'bg-white border-blue-500 text-slate-800 shadow-xl shadow-blue-500/10';
+  const isDark = document.documentElement.classList.contains('dark');
+  const bgClass = isDark
+    ? (type === 'success' ? 'bg-navy-900 border-emerald-500 text-slate-100 shadow-xl' : 'bg-navy-900 border-blue-500 text-slate-100 shadow-xl')
+    : (type === 'success' ? 'bg-white border-emerald-500 text-slate-800 shadow-xl shadow-emerald-500/10' : 'bg-white border-blue-500 text-slate-800 shadow-xl shadow-blue-500/10');
   
   toast.className = `flex items-start gap-3 p-4 rounded-2xl border backdrop-blur-xl transition-all duration-300 transform translate-y-2 opacity-0 ${bgClass}`;
   toast.innerHTML = `
@@ -178,10 +218,10 @@ function showToast(title, message, type = 'success') {
       <i data-lucide="${type === 'success' ? 'check-circle' : 'info'}" class="w-5 h-5"></i>
     </div>
     <div class="flex-1">
-      <h4 class="font-bold text-sm text-slate-900">${title}</h4>
-      <p class="text-xs mt-0.5 text-slate-600 leading-relaxed">${message}</p>
+      <h4 class="font-bold text-sm text-slate-900 dark:text-white">${title}</h4>
+      <p class="text-xs mt-0.5 text-slate-600 dark:text-slate-300 leading-relaxed">${message}</p>
     </div>
-    <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-700 p-1">
+    <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1">
       <i data-lucide="x" class="w-4 h-4"></i>
     </button>
   `;
@@ -194,6 +234,7 @@ function showToast(title, message, type = 'success') {
   }, 4500);
 }
 
+// Hamburger Navigation
 function toggleMobileMenu() {
   const menu = document.getElementById('mobile-menu');
   const btn = document.getElementById('hamburger-icon');
@@ -302,6 +343,7 @@ function updateNavbar() {
   lucide.createIcons();
 }
 
+// Scrap Value Calculator
 function initCalculator() {
   const container = document.getElementById('rate-cards-grid');
   if (!container) return;
@@ -384,6 +426,24 @@ function updateCalculatorSummary() {
   if (co2El) co2El.innerText = `${(totalKg * 1.4).toFixed(1)} kg`;
 }
 
+// Gated Doorstep Booking: Requires Login First
+function openBookingWizard(step = 1) {
+  // If not logged in as user, prompt login first
+  if (!window.scrapo.currentUser || window.scrapo.currentUser.role !== 'user') {
+    window.scrapo.pendingBooking = true;
+    showToast('Sign In Required', 'Please sign in or use Quick Demo Login to access your scrap scheduler.', 'info');
+    openModal('auth-modal');
+    switchAuthRole('user');
+    return;
+  }
+
+  // If logged in, navigate to user dashboard & open scheduler
+  switchView('user-dashboard');
+  currentBookingStep = step;
+  updateBookingWizardUI();
+  openModal('booking-modal');
+}
+
 function quickBookFromCalculator() {
   let totalEarnings = 0;
   let totalKg = 0;
@@ -406,12 +466,6 @@ function quickBookFromCalculator() {
 }
 
 let currentBookingStep = 1;
-function openBookingWizard(step = 1) {
-  currentBookingStep = step;
-  updateBookingWizardUI();
-  openModal('booking-modal');
-}
-
 function setBookingStep(step) {
   currentBookingStep = step;
   updateBookingWizardUI();
@@ -567,7 +621,7 @@ function renderUserDashboard() {
   if (!container) return;
   const bookings = window.scrapo.bookings;
   if (bookings.length === 0) {
-    container.innerHTML = `<div class="p-8 text-center text-slate-400 font-medium">No pickups scheduled yet. Click 'Schedule Doorstep Pickup' to start!</div>`;
+    container.innerHTML = `<div class="p-8 text-center text-slate-400 font-medium">No pickups scheduled yet. Use the scheduler above to book your first doorstep pickup!</div>`;
     return;
   }
   container.innerHTML = bookings.map(b => `
@@ -715,6 +769,10 @@ function quickDemoLogin(role) {
     showToast('Welcome back, Aarav!', 'Logged in as Household Customer.', 'success');
     closeModal('auth-modal');
     switchView('user-dashboard');
+    if (window.scrapo.pendingBooking) {
+      window.scrapo.pendingBooking = false;
+      setTimeout(() => openBookingWizard(1), 300);
+    }
   } else if (role === 'collector') {
     window.scrapo.login({
       id: 'agent-408', name: 'Ramesh Kumar', role: 'collector', badge: 'Verified Agent #408', phone: '+91 98111 22334', scaleId: 'SCR-901-CALIBRATED'
@@ -733,6 +791,7 @@ function quickDemoLogin(role) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   initCalculator();
   updateNavbar();
   renderUserDashboard();
