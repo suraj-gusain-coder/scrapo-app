@@ -310,25 +310,25 @@ function updateNavbar() {
     };
     if (userGreeting) {
       const role = window.scrapo.currentUser.role;
-      let badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      if (role === 'collector') badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
-      if (role === 'admin') badgeColor = 'bg-blue-50 text-blue-700 border-blue-200';
+      let badgeColor = 'bg-emerald-50 text-emerald-800 border-emerald-200';
+      if (role === 'collector') badgeColor = 'bg-amber-50 text-amber-800 border-amber-200';
+      if (role === 'admin') badgeColor = 'bg-blue-50 text-blue-800 border-blue-200';
+      userGreeting.style.display = 'flex';
       userGreeting.innerHTML = `
         <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${badgeColor} border">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           ${window.scrapo.currentUser.name} (${role.toUpperCase()})
         </span>
       `;
-      userGreeting.classList.remove('hidden');
     }
     if (portalLinks) {
-      portalLinks.classList.remove('hidden');
+      portalLinks.style.display = 'flex';
       const role = window.scrapo.currentUser.role;
       let portalBtnText = '🏠 My Portal';
       if (role === 'collector') portalBtnText = '🚚 Collector Portal';
       if (role === 'admin') portalBtnText = '🛡️ Fleet Admin Ops';
       portalLinks.innerHTML = `
-        <button onclick="switchView('${role}-dashboard')" class="text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 px-3.5 py-2 rounded-xl border border-emerald-200 transition-all flex items-center gap-1.5 shadow-sm">
+        <button onclick="switchView('${role}-dashboard')" class="text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 px-3.5 py-2 rounded-xl border border-emerald-200 transition-all flex items-center gap-1.5 shadow-sm">
           ${portalBtnText}
         </button>
       `;
@@ -337,8 +337,14 @@ function updateNavbar() {
     authBtn.innerHTML = `<i data-lucide="user-check" class="w-4 h-4"></i> Sign In / Portal`;
     authBtn.className = "px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white border border-slate-900 flex items-center gap-1.5 transition-all shadow-sm";
     authBtn.onclick = () => openModal('auth-modal');
-    if (userGreeting) userGreeting.classList.add('hidden');
-    if (portalLinks) portalLinks.classList.add('hidden');
+    if (userGreeting) {
+      userGreeting.innerHTML = '';
+      userGreeting.style.display = 'none';
+    }
+    if (portalLinks) {
+      portalLinks.innerHTML = '';
+      portalLinks.style.display = 'none';
+    }
   }
   lucide.createIcons();
 }
