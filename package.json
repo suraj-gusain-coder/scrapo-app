@@ -1,0 +1,21 @@
+﻿{
+  "name": "scrapo-web",
+  "version": "1.0.0",
+  "description": "SCRAPO - The Smarter Way to Scrap. Digital marketplace & logistics platform for doorstep scrap pickup.",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 3000",
+    "serve": "npx serve ."
+  },
+  "keywords": [
+    "scrap-management",
+    "recycling",
+    "circular-economy",
+    "doorstep-pickup",
+    "sustainability",
+    "india",
+    "waste-management"
+  ],
+  "author": "SCRAPO Technologies",
+  "license": "MIT"
+}
